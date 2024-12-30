@@ -18,58 +18,74 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey; // Must be >= 32 chars for HS256 (256 bits)
 
-    @Value("${jwt.expiration:86400000}") // optional: 1 day default
+    @Value("${jwt.expiration:86400000}") // Default to 1 day if not configured
     private long jwtExpirationInMs;
 
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    }
+
     /**
-     * (Optional) Generate JWT if you handle creation here,
-     * or do it in your AuthService. Adjust as needed.
+     * Generate a JWT token for the provided user.
      */
     public String generateToken(User user) {
-        // Requires at least a 256-bit key for HS256
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
-                .setSubject(user.getUsername())         // subject = username
-                .claim("role", user.getRole())          // store role if needed
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setSubject(user.getUsername())         // Set subject (username)
+                .claim("role", user.getRole())          // Add custom claims (role)
+                .setIssuedAt(now)                       // Set token issue time
+                .setExpiration(expiryDate)              // Set token expiration time
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // Sign with HS256
                 .compact();
     }
 
     /**
-     * Validate the token signature and expiration.
-     * Return boolean: true if valid, false if invalid.
+     * Validate the JWT token and log specific errors.
      */
     public boolean validateToken(String token) {
         try {
-            Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
             Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
-            // If parsing works, token is valid
             return true;
-        } catch (JwtException ex) {
-            log.error("Token validation error: {}", ex.getMessage());
-            return false;
+        } catch (ExpiredJwtException ex) {
+            log.error("Token expired: {}", ex.getMessage());
+        } catch (UnsupportedJwtException ex) {
+            log.error("Unsupported JWT: {}", ex.getMessage());
+        } catch (MalformedJwtException ex) {
+            log.error("Malformed JWT: {}", ex.getMessage());
+        } catch (SignatureException ex) {
+            log.error("Invalid signature: {}", ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            log.error("Token is null or empty: {}", ex.getMessage());
         }
+        return false;
     }
 
     /**
-     * Extract the username (subject) from a valid token.
+     * Extract username from the token.
      */
     public String getUsernameFromJWT(String token) {
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject(); // the 'sub' field in JWT
+        return claims.getSubject(); // Extract subject (username)
+    }
+
+    /**
+     * Extract user role from the token.
+     */
+    public String getUserRoleFromJWT(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("role", String.class); // Extract role from claims
     }
 }

@@ -16,7 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.util.List;
 
 @RestController
@@ -32,14 +31,16 @@ public class BookController {
 
     // Everyone can list all books
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks() {
-        List<Book> books = bookService.getAllBooks();
+    public ResponseEntity<List<Book>> getAllBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<Book> books = bookService.getBooksPaginated(page, size);
         return ResponseEntity.ok(books);
     }
 
     // Everyone can view a book detail
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+    public ResponseEntity<Book> getBookById(@PathVariable("id") Long id) {
         Book book = bookService.getBookById(id);
         return ResponseEntity.ok(book);
     }
@@ -57,7 +58,7 @@ public class BookController {
 
     // ------------------ ADMIN ACCESS ------------------
 
-    // Only admin can create a book
+    // Only admins can create a book
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Book> createBook(@Valid @RequestBody BookRequest bookRequest) {
@@ -72,7 +73,7 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
 
-    // Only admin can update a book
+    // Only admins can update a book
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Book> updateBook(
@@ -89,7 +90,7 @@ public class BookController {
         return ResponseEntity.ok(updated);
     }
 
-    // Only admin can delete a book
+    // Only admins can delete a book
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<String> deleteBook(@PathVariable Long id) {
@@ -97,7 +98,7 @@ public class BookController {
         return ResponseEntity.ok("Book deleted successfully.");
     }
 
-    // Only admin can upload a file
+    // Only admins can upload a file
     @PostMapping("/{id}/upload")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<String> uploadFile(

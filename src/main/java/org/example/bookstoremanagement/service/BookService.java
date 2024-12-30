@@ -13,6 +13,8 @@ import org.example.bookstoremanagement.repository.BookFileRepository;
 import org.example.bookstoremanagement.repository.BookRepository;
 import org.example.bookstoremanagement.repository.GenreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -98,14 +100,15 @@ public class BookService {
 
     // ------------------ GETTERS ------------------
 
-    public Book getBookById(Long bookId) {
-        return bookRepository.findById(bookId)
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Book not found with id: " + bookId));
+                        "Book not found with id: " + id));
     }
 
-    public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+    public List<Book> getBooksPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return bookRepository.findAll(pageable).getContent();
     }
 
     // ------------------ FILE UPLOAD/DOWNLOAD ------------------
