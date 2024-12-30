@@ -3,7 +3,9 @@ Base URL: http://localhost:8080
 
 **1. Authentication**
    
-POST /auth/register
+**POST /auth/register**
+![image](https://github.com/user-attachments/assets/5dad68e7-c4fe-4c3a-a690-354046b592c9)
+
 
 Request Body (JSON):
 
@@ -31,7 +33,9 @@ Copy code
 
 Registers a new user. Depending on your logic, you can assign roles (e.g., ["ADMIN"], ["CUSTOMER"]) here.
 
-POST /auth/login
+**POST /auth/login**
+![image](https://github.com/user-attachments/assets/95feb135-d292-48c6-92d9-1c929351e7c6)
+
 
 Request Body (JSON):
 
@@ -57,9 +61,11 @@ Copy code
 Logs in with valid credentials and returns a JWT token used for subsequent requests.
 
 
-2. Books
+**2. Books**
 
-GET /books
+**GET /books**
+![image](https://github.com/user-attachments/assets/8a122896-6f97-4550-bcae-629bdcb51f8c)
+
 
 Request:
 
@@ -85,7 +91,9 @@ Copy code
 
 Fetches a list of all books. May or may not require authentication, depending on your security config.
 
-GET /books/{id}
+**GET /books/{id}**
+![image](https://github.com/user-attachments/assets/e862817f-e902-4494-9660-9f157edb3225)
+
 
 Request:
 
@@ -108,7 +116,7 @@ Copy code
 
 Retrieves a single book by its ID.
 
-POST /books
+**POST /books**
 
 Request Body (JSON) (Requires admin or staff privileges):
 
@@ -135,7 +143,7 @@ Copy code
 }
 Creates a new book entry in the system.
 
-PUT /books/{id}
+**PUT /books/{id}**
 Request Body (JSON) (Requires admin or staff privileges):
 
 json
@@ -158,7 +166,7 @@ Copy code
 }
 Updates book details such as title, price, or stock.
 
-DELETE /books/{id}
+**DELETE /books/{id}**
 Request:
 
 No body (Requires admin privileges).
@@ -172,115 +180,11 @@ Copy code
 }
 Removes a book from the system.
 
-3. Orders
-GET /orders
-Request:
+**4. Users**
 
-No body (Requires admin or staff privileges).
-Provide Authorization: Bearer <token> header.
-Expected Output (JSON):
+**GET /users**
+![image](https://github.com/user-attachments/assets/01f408cd-c3ec-4c09-bb87-74611e755e6f)
 
-json
-Copy code
-[
-  {
-    "id": 101,
-    "userId": 1,
-    "items": [
-      { "bookId": 2, "quantity": 1 }
-    ],
-    "totalPrice": 49.99
-  },
-  ...
-]
-Lists all orders in the system.
-
-GET /orders/{id}
-Request:
-
-No body.
-Provide Authorization: Bearer <token> header (ADMIN, STAFF, or owner).
-Expected Output (JSON):
-
-json
-Copy code
-{
-  "id": 101,
-  "userId": 1,
-  "items": [
-    { "bookId": 2, "quantity": 1 }
-  ],
-  "totalPrice": 49.99
-}
-Retrieves an order by ID. Typically accessible by the order’s owner or staff/admin.
-
-POST /orders
-Request Body (JSON) (Requires authenticated user):
-
-json
-Copy code
-{
-  "items": [
-    { "bookId": 2, "quantity": 2 },
-    { "bookId": 3, "quantity": 1 }
-  ]
-}
-Expected Output (JSON):
-
-json
-Copy code
-{
-  "id": 102,
-  "userId": 1,
-  "items": [
-    { "bookId": 2, "quantity": 2 },
-    { "bookId": 3, "quantity": 1 }
-  ],
-  "totalPrice": 139.97
-}
-Creates a new order for the authenticated user.
-
-PUT /orders/{id}
-Request Body (JSON) (Requires the same user or admin/staff role):
-
-json
-Copy code
-{
-  "items": [
-    { "bookId": 2, "quantity": 1 }
-  ]
-}
-Expected Output (JSON):
-
-json
-Copy code
-{
-  "id": 102,
-  "userId": 1,
-  "items": [
-    { "bookId": 2, "quantity": 1 }
-  ],
-  "totalPrice": 49.99
-}
-Updates an existing order’s items (if your business rules allow it).
-
-DELETE /orders/{id}
-Request:
-
-No body.
-Provide Authorization: Bearer <token> header (ADMIN, STAFF, or owner).
-Expected Output (JSON):
-
-json
-Copy code
-{
-  "message": "Order with id=102 cancelled successfully."
-}
-Cancels or deletes the specified order.
-
-4. Users
-
-GET /users
 
 Request:
 
@@ -308,7 +212,7 @@ Copy code
 
 Retrieves a list of all users. Only admins can see every user.
 
-GET /users/{id}
+**GET /users/{id}**
 
 Request:
 
@@ -331,7 +235,7 @@ Copy code
 Fetches user details. Regular users can only view their own info; admins can view any user.
 
 
-PUT /users/{id}
+**PUT /users/{id}**
 
 Request Body (JSON) (Requires admin or same user):
 
@@ -358,7 +262,7 @@ Copy code
 
 Updates user details. Often used by the user to update their own info or by an admin to manage users.
 
-DELETE /users/{id}
+**DELETE /users/{id}**
 
 Request:
 
